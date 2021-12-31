@@ -1,0 +1,44 @@
+MCU=attiny85
+AVRDUDEMCU=t85
+BAUD=10000
+
+#F_CPU=1000000UL
+#LFUSE=0x62
+
+#F_CPU=8000000UL
+#LFUSE=0xe2
+
+F_CPU=16000000UL
+LFUSE=0xe1
+
+CC=avr-gcc
+CFLAGS=-g -Os -Wall -mcall-prologues -mmcu=$(MCU) -DF_CPU=$(F_CPU)
+OBJ2HEX=avr-objcopy
+AVRDUDE=avrdude
+TARGET=blinky
+
+all:
+	$(CC) $(CFLAGS) $(TARGET).c -o $(TARGET)
+	$(OBJ2HEX) -R .eeprom -O ihex $(TARGET) $(TARGET).hex
+	avr-size -C $(TARGET)
+
+install: all
+	gpio -g mode 5 out
+	gpio -g write 5 0
+	$(AVRDUDE) -p $(AVRDUDEMCU) -P /dev/spidev0.0 -c linuxspi $(BAUD) -U flash:w:$(TARGET).hex
+	gpio -g write 5 1
+
+read:
+	gpio -g mode 5 out
+	gpio -g write 5 0
+	$(AVRDUDE) -p $(AVRDUDEMCU) -P /dev/spidev0.0 -c linuxspi $(BAUD)
+	gpio -g write 5 1
+
+fuse:
+	gpio -g mode 5 out
+	gpio -g write 5 0
+	$(AVRDUDE) -p $(AVRDUDEMCU) -P /dev/spidev0.0 -c linuxspi $(BAUD) -U lfuse:w:$(LFUSE):m -U hfuse:w:0xdf:m -U efuse:w:0xfe:m
+	gpio -g write 5 1
+
+clean:
+	rm -f *.hex *.obj *.o $(TARGET)
