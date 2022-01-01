@@ -20,7 +20,7 @@
 volatile unsigned long timer0_millis = 0;
 volatile unsigned char timer0_fract = 0;
 
-#if defined(__AVR_ATtiny13__) || defined(__AVR_ATtiny13A__) || defined(__AVR_ATtiny85__)
+#if defined(__AVR_ATtiny13__) || defined(__AVR_ATtiny13A__) || defined(__AVR_ATtiny84__) || defined(__AVR_ATtiny85__)
 ISR(TIM0_OVF_vect)
 #else
 ISR(TIMER0_OVF_vect)
@@ -76,8 +76,8 @@ unsigned long millis()
 
 int times[] = { 250, 250, 250, 1000, 50, 50, 50, 50, 50, 50, 50, 2000, 0 };
 
-#define LEDPIN PB3
-#define LEDDDR DDB3
+#define LEDPIN PB1
+#define LEDDDR DDB1
 
 int main(void)
 {
