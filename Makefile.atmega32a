@@ -1,11 +1,11 @@
 MCU=atmega32
 AVRDUDEMCU=m32
+TARGET=blinky
 HFUSE=0x99
 
 # 10000 - very slow but works
 # 220000 - roughtly as fast as 1Mhz ATmega32a can go.
-SLOW=-b 220000
-#SLOW=
+BAUD=220000
 
 #F_CPU=1000000UL
 #LFUSE=0xE1
@@ -16,34 +16,4 @@ LFUSE=0xE4
 #F_CPU=16000000UL
 #LFUSE=0xCF
 
-CC=avr-gcc
-CFLAGS=-g -Os -Wall -mcall-prologues -mmcu=$(MCU) -DF_CPU=$(F_CPU)
-OBJ2HEX=avr-objcopy
-AVRDUDE=avrdude
-TARGET=blinky
-
-all:
-	$(CC) $(CFLAGS) $(TARGET).c -o $(TARGET)
-	$(OBJ2HEX) -R .eeprom -O ihex $(TARGET) $(TARGET).hex
-	avr-size -C $(TARGET)
-
-install: all
-	gpio -g mode 5 out
-	gpio -g write 5 0
-	$(AVRDUDE) -p $(AVRDUDEMCU) -P /dev/spidev0.0 -c linuxspi $(SLOW) -U flash:w:$(TARGET).hex
-	gpio -g write 5 1
-
-read:
-	gpio -g mode 5 out
-	gpio -g write 5 0
-	$(AVRDUDE) -p $(AVRDUDEMCU) -P /dev/spidev0.0 -c linuxspi $(SLOW)
-	gpio -g write 5 1
-
-fuse:
-	gpio -g mode 5 out
-	gpio -g write 5 0
-	$(AVRDUDE) -p $(AVRDUDEMCU) -P /dev/spidev0.0 -c linuxspi $(SLOW) -U lfuse:w:$(LFUSE):m -U hfuse:w:$(HFUSE):m
-	gpio -g write 5 1
-
-clean:
-	rm -f *.hex *.obj *.o $(TARGET)
+include Makefile.all
