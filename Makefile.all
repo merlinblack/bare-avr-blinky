@@ -1,0 +1,41 @@
+ifndef TARGET
+$(error TARGET not defined. This file souhld not be run directly)
+endif
+CC=avr-gcc
+CFLAGS=-g -Os -Wall -mcall-prologues -mmcu=$(MCU) -DF_CPU=$(F_CPU)
+OBJ2HEX=avr-objcopy
+DEVICE=linuxspi
+PORT=/dev/spidev0.0
+PORT:=$(if $(PORT),-P $(PORT))
+BAUD:=$(if $(BAUD),-b $(BAUD))
+AVRDUDE=avrdude -p $(AVRDUDEMCU) $(PORT) -c $(DEVICE) $(BAUD)
+
+LFUSE:=$(if $(LFUSE),-U lfuse:w:$(LFUSE):m)
+HFUSE:=$(if $(HFUSE),-U hfuse:w:$(HFUSE):m)
+EFUSE:=$(if $(EFUSE),-U efuse:w:$(EFUSE):m)
+
+all:
+	$(CC) $(CFLAGS) $(TARGET).c -o $(TARGET)
+	$(OBJ2HEX) -R .eeprom -O ihex $(TARGET) $(TARGET).hex
+	avr-size -C --mcu $(MCU) $(TARGET)
+
+install: all
+	gpio -g mode 5 out
+	gpio -g write 5 0
+	$(AVRDUDE) -U flash:w:$(TARGET).hex
+	gpio -g write 5 1
+
+read:
+	gpio -g mode 5 out
+	gpio -g write 5 0
+	$(AVRDUDE) -v
+	gpio -g write 5 1
+
+fuse:
+	gpio -g mode 5 out
+	gpio -g write 5 0
+	$(AVRDUDE) $(LFUSE) $(HFUSE) $(EFUSE)
+	gpio -g write 5 1
+
+clean:
+	rm -f *.hex *.obj *.o $(TARGET)
