@@ -3,6 +3,8 @@ Cross Chip Blinky
 
 My experiments with various AVR chips I have with writing fairly bare bones blink programs.
 
+[Article on my website with some pictures](https://www.atkinson.kiwi/article/blinky_from_scratch)
+
 Inspiraion for the millis code is taken from [MighyCore](https://github.com/MCUdude/MightyCore)
 
 This code should work on nearly any AVR, but I've only setup the code to work with (so far):-
