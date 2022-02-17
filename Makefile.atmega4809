@@ -1,0 +1,7 @@
+MCU=atmega4809
+AVRDUDEMCU=$(MCU)
+TARGET=fancy_blink_4809
+
+F_CPU=16000000UL
+
+include Makefile.all

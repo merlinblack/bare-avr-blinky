@@ -19,9 +19,9 @@ ATmega32a
 
 ATmega328p
 
+ATmega4809 - only fancy blink for now with separate source file. It's quite different to the rest.
 
 The makefiles are setup for using a Raspberry PI which happens to permanently have a breadboard attached.
 I use GPIO 21 to control the reset pin, and the standard SCLK, MISO and MOSI pins.
 
-Soon will come ATmega1284 (I doubt that will need much work), and the newish ATmega4809, for which I'll
-have to figure out the hardware and software to do UPDI programming.
+Soon will come ATmega1284 (I doubt that will need much work)

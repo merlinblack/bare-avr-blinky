@@ -54,7 +54,7 @@ void init_timer()
   TCCR0 |= _BV(CS01) | _BV(CS00); // Atmega32a
 #endif
   // Set timer0 interrupt mask - TimerOverflowInterruptEnable
-#ifdef TCCR0B
+#ifdef TIMSK0
   TIMSK0 |= _BV(TOIE0);
 #else
   TIMSK |= _BV(TOIE0); // Atmega32a
@@ -77,14 +77,16 @@ unsigned long millis()
 int times[] = { 250, 250, 250, 1000, 50, 50, 50, 50, 50, 50, 50, 2000, 0 };
 
 #define LEDPIN PB1
-#define LEDDDR DDB1
+#define LEDDD DDB1
+#define LEDDDR DDRB
+#define LEDPORT PORTB
 
 int main(void)
 {
   init_timer();
 
-  DDRB |= _BV(LEDDDR);
-  PORTB = _BV(LEDPIN);
+  LEDDDR |= _BV(LEDDD);
+  LEDPORT = _BV(LEDPIN);
 
   unsigned long lastTime = 0;
   uint8_t t_index = 0;
@@ -93,7 +95,7 @@ int main(void)
     unsigned long currentTime = millis();
 
     if (currentTime > lastTime + times[t_index]) {
-      PORTB ^= _BV(LEDPIN);
+      LEDPORT ^= _BV(LEDPIN);
       lastTime = currentTime;
       t_index++;
       if (!times[t_index])
