@@ -40,7 +40,7 @@ unsigned long millis()
 int times[] = { 250, 250, 250, 1000, 50, 50, 50, 50, 50, 50, 50, 2000, 0 };
 
 #define LED_PIN 7
-#define LED_PIN_bm _BV(LED_PIN)
+#define LED_PIN_bm (1<<LED_PIN)
 #define LED_PORT PORTA
 
 int main(void)
