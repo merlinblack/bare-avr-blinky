@@ -39,16 +39,16 @@ unsigned long millis()
 
 int times[] = { 250, 250, 250, 1000, 50, 50, 50, 50, 50, 50, 50, 2000, 0 };
 
-#define LEDPIN 7
-#define LEDDDR PORTA.DIR
-#define LEDPORT PORTA.OUT
+#define LED_PIN 7
+#define LED_PIN_bm _BV(LED_PIN)
+#define LED_PORT PORTA
 
 int main(void)
 {
   init_timer();
 
-  LEDDDR |= _BV(LEDPIN);
-  LEDPORT = _BV(LEDPIN);
+  LED_PORT.DIRSET = LED_PIN_bm;
+  LED_PORT.OUTSET = LED_PIN_bm;
 
   unsigned long lastTime = 0;
   uint8_t t_index = 0;
@@ -57,7 +57,7 @@ int main(void)
     unsigned long currentTime = millis();
 
     if (currentTime > lastTime + times[t_index]) {
-      LEDPORT ^= _BV(LEDPIN);
+      LED_PORT.OUTTGL = LED_PIN_bm;
       lastTime = currentTime;
       t_index++;
       if (!times[t_index])

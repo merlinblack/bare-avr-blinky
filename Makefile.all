@@ -15,9 +15,9 @@ HFUSE:=$(if $(HFUSE),-U hfuse:w:$(HFUSE):m)
 EFUSE:=$(if $(EFUSE),-U efuse:w:$(EFUSE):m)
 
 all:
-	$(CC) $(CFLAGS) $(TARGET).c -o $(TARGET)
-	$(OBJ2HEX) -R .eeprom -O ihex $(TARGET) $(TARGET).hex
-	avr-objdump -Pmem-usage $(TARGET)
+	$(CC) $(CFLAGS) $(TARGET).c -o $(TARGET).elf
+	$(OBJ2HEX) -R .eeprom -O ihex $(TARGET).elf $(TARGET).hex
+	avr-objdump -Pmem-usage $(TARGET).elf
 
 install: all
 	gpio -g mode 5 out
@@ -38,4 +38,4 @@ fuse:
 	gpio -g write 5 1
 
 clean:
-	rm -f *.hex *.obj *.o $(TARGET)
+	rm -f *.hex *.obj *.o $(TARGET).elf
