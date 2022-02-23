@@ -4,8 +4,8 @@ endif
 CC=avr-gcc
 CFLAGS=-g -Os -Wall -mcall-prologues -mmcu=$(MCU) -DF_CPU=$(F_CPU)
 OBJ2HEX=avr-objcopy
-DEVICE=linuxspi
-PORT=/dev/spidev0.0
+DEVICE?=linuxspi
+PORT?=/dev/spidev0.0
 PORT:=$(if $(PORT),-P $(PORT))
 BAUD:=$(if $(BAUD),-b $(BAUD))
 AVRDUDE=avrdude -p $(AVRDUDEMCU) $(PORT) -c $(DEVICE) $(BAUD)
@@ -20,22 +20,40 @@ all:
 	avr-objdump -Pmem-usage $(TARGET).elf
 
 install: all
-	gpio -g mode 5 out
-	gpio -g write 5 0
+	if [ '$(DEVICE)' == 'linuxspi' ]; then \
+		gpio -g mode 5 out; \
+		gpio -g write 5 0; \
+	fi
+
 	$(AVRDUDE) -U flash:w:$(TARGET).hex
-	gpio -g write 5 1
+
+	if [ '$(DEVICE)' == 'linuxspi' ]; then \
+		gpio -g write 5 1; \
+	fi
 
 read:
-	gpio -g mode 5 out
-	gpio -g write 5 0
+	if [ '$(DEVICE)' == 'linuxspi' ]; then \
+		gpio -g mode 5 out; \
+		gpio -g write 5 0; \
+	fi
+
 	$(AVRDUDE) -v
-	gpio -g write 5 1
+
+	if [ '$(DEVICE)' == 'linuxspi' ]; then \
+		gpio -g write 5 1; \
+	fi
 
 fuse:
-	gpio -g mode 5 out
-	gpio -g write 5 0
+	if [ '$(DEVICE)' == 'linuxspi' ]; then \
+		gpio -g mode 5 out; \
+		gpio -g write 5 0; \
+	fi
+
 	$(AVRDUDE) $(LFUSE) $(HFUSE) $(EFUSE)
-	gpio -g write 5 1
+
+	if [ '$(DEVICE)' == 'linuxspi' ]; then \
+		gpio -g write 5 1; \
+	fi
 
 clean:
 	rm -f *.hex *.obj *.o $(TARGET).elf
