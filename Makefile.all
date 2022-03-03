@@ -19,39 +19,40 @@ all:
 	$(OBJ2HEX) -R .eeprom -O ihex $(TARGET).elf $(TARGET).hex
 	avr-objdump -Pmem-usage $(TARGET).elf
 
+flash: install
 install: all
-	if [ '$(DEVICE)' == 'linuxspi' ]; then \
+	@if [ '$(DEVICE)' == 'linuxspi' ]; then \
 		gpio -g mode 5 out; \
 		gpio -g write 5 0; \
 	fi
 
 	$(AVRDUDE) -U flash:w:$(TARGET).hex
 
-	if [ '$(DEVICE)' == 'linuxspi' ]; then \
+	@if [ '$(DEVICE)' == 'linuxspi' ]; then \
 		gpio -g write 5 1; \
 	fi
 
 read:
-	if [ '$(DEVICE)' == 'linuxspi' ]; then \
+	@if [ '$(DEVICE)' == 'linuxspi' ]; then \
 		gpio -g mode 5 out; \
 		gpio -g write 5 0; \
 	fi
 
 	$(AVRDUDE) -v
 
-	if [ '$(DEVICE)' == 'linuxspi' ]; then \
+	@if [ '$(DEVICE)' == 'linuxspi' ]; then \
 		gpio -g write 5 1; \
 	fi
 
 fuse:
-	if [ '$(DEVICE)' == 'linuxspi' ]; then \
+	@if [ '$(DEVICE)' == 'linuxspi' ]; then \
 		gpio -g mode 5 out; \
 		gpio -g write 5 0; \
 	fi
 
 	$(AVRDUDE) $(LFUSE) $(HFUSE) $(EFUSE)
 
-	if [ '$(DEVICE)' == 'linuxspi' ]; then \
+	@if [ '$(DEVICE)' == 'linuxspi' ]; then \
 		gpio -g write 5 1; \
 	fi
 
