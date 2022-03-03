@@ -1,6 +1,6 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <util/delay.h>
+#include <stdio.h>
 
 #define TIME_TRACKING_TIMER_COUNT (F_CPU / 1000) // Should correspond to exactly 1 ms, i.e. millis()
 volatile unsigned long timer_millis = 0;
@@ -21,7 +21,6 @@ void init_timer()
   TCB0.INTCTRL  |= TCB_CAPT_bm;
   TCB0.CTRLA     = TCB_CLKSEL_CLKDIV1_gc;
   TCB0.CTRLA    |= TCB_ENABLE_bm;
-  sei();
 }
 
 unsigned long millis()
@@ -37,18 +36,56 @@ unsigned long millis()
   return m;
 }
 
+void usart_send_char(char c)
+{
+    /* Wait for TX register to ready for another byte */
+    while (!(USART0.STATUS & USART_DREIF_bm))
+    {
+        ;
+    }
+    /* Send byte */
+    USART0.TXDATAL = c;
+}
+
+int usart_print_char(char c, FILE *stream)
+{
+    usart_send_char(c);
+    return 0;
+}
+
+FILE usart_stream = FDEV_SETUP_STREAM(usart_print_char, NULL, _FDEV_SETUP_WRITE);
+
+#define USART_BAUD_RATE(BAUD_RATE) ((uint16_t)((float)F_CPU * 64 / (16 * (float)BAUD_RATE) + 0.5))
+
+void init_usart()
+{
+    /* Set baud rate */
+    USART0.BAUD = USART_BAUD_RATE(115200);
+    /* Enable TX for USART0 */
+    USART0.CTRLB |= USART_TXEN_bm;
+    /* Set TX pin to output */
+    PORTA.DIR |= PIN0_bm;
+    /* Redirect stdout */
+    stdout = &usart_stream;
+}
+
+/************************************************************************************************/
+
 int times[] = { 250, 250, 250, 1000, 50, 50, 50, 50, 50, 50, 50, 2000, 0 };
 
-#define LED_PIN 7
-#define LED_PIN_bm (1<<LED_PIN)
+#define LED_PIN_bm PIN7_bm
 #define LED_PORT PORTA
 
 int main(void)
 {
   init_timer();
+  init_usart();
+  sei();
 
   LED_PORT.DIRSET = LED_PIN_bm;
   LED_PORT.OUTSET = LED_PIN_bm;
+
+  printf("Booting Fancy Blink - with printf\r\nCompiled: %s %s\r\n", __DATE__, __TIME__);
 
   unsigned long lastTime = 0;
   uint8_t t_index = 0;
@@ -62,6 +99,8 @@ int main(void)
       t_index++;
       if (!times[t_index])
         t_index = 0;
+
+      printf("Millis: %lu\r\n", currentTime);
     }
 
     // Do other stuff
