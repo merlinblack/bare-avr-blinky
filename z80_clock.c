@@ -8,50 +8,50 @@ volatile unsigned long timer_millis = 0;
 
 ISR(TCB3_INT_vect)
 {
-    timer_millis++;
+	timer_millis++;
 
-    /** clear flag **/
-    TCB3.INTFLAGS = TCB_CAPT_bm;
+	/** clear flag **/
+	TCB3.INTFLAGS = TCB_CAPT_bm;
 }
 
 void init_timer()
 {
-  _PROTECTED_WRITE(CLKCTRL_MCLKCTRLB, 0x00);
-  TCB3.CTRLB     = TCB_CNTMODE_INT_gc;
-  TCB3.CCMP      = TIME_TRACKING_TIMER_COUNT - 1;
-  TCB3.INTCTRL  |= TCB_CAPT_bm;
-  TCB3.CTRLA     = TCB_CLKSEL_CLKDIV1_gc;
-  TCB3.CTRLA    |= TCB_ENABLE_bm;
+	_PROTECTED_WRITE(CLKCTRL_MCLKCTRLB, 0x00);
+	TCB3.CTRLB		 = TCB_CNTMODE_INT_gc;
+	TCB3.CCMP			= TIME_TRACKING_TIMER_COUNT - 1;
+	TCB3.INTCTRL	|= TCB_CAPT_bm;
+	TCB3.CTRLA		 = TCB_CLKSEL_CLKDIV1_gc;
+	TCB3.CTRLA		|= TCB_ENABLE_bm;
 }
 
 unsigned long millis()
 {
-  unsigned long m;
-  uint8_t oldSREG = SREG;
+	unsigned long m;
+	uint8_t oldSREG = SREG;
 
-  // copy millis into 'm' atomically by disabling interrupts
-  cli();
-  m = timer_millis;
-  SREG = oldSREG;
+	// copy millis into 'm' atomically by disabling interrupts
+	cli();
+	m = timer_millis;
+	SREG = oldSREG;
 
-  return m;
+	return m;
 }
 
 void usart_send_char(char c)
 {
-    /* Wait for TX register to ready for another byte */
-    while (!(USART0.STATUS & USART_DREIF_bm))
-    {
-        ;
-    }
-    /* Send byte */
-    USART0.TXDATAL = c;
+	/* Wait for TX register to ready for another byte */
+	while (!(USART0.STATUS & USART_DREIF_bm))
+	{
+		;
+	}
+	/* Send byte */
+	USART0.TXDATAL = c;
 }
 
 int usart_print_char(char c, FILE *stream)
 {
-    usart_send_char(c);
-    return 0;
+	usart_send_char(c);
+	return 0;
 }
 
 FILE usart_stream = FDEV_SETUP_STREAM(usart_print_char, NULL, _FDEV_SETUP_WRITE);
@@ -60,14 +60,14 @@ FILE usart_stream = FDEV_SETUP_STREAM(usart_print_char, NULL, _FDEV_SETUP_WRITE)
 
 void init_usart()
 {
-    /* Set baud rate */
-    USART0.BAUD = USART_BAUD_RATE(115200);
-    /* Enable TX for USART0 */
-    USART0.CTRLB |= USART_TXEN_bm;
-    /* Set TX pin to output */
-    PORTA.DIR |= PIN0_bm;
-    /* Redirect stdout */
-    stdout = &usart_stream;
+	/* Set baud rate */
+	USART0.BAUD = USART_BAUD_RATE(115200);
+	/* Enable TX for USART0 */
+	USART0.CTRLB |= USART_TXEN_bm;
+	/* Set TX pin to output */
+	PORTA.DIR |= PIN0_bm;
+	/* Redirect stdout */
+	stdout = &usart_stream;
 }
 
 /************************************************************************************************/
@@ -109,7 +109,6 @@ bool buttonPressedAndReleased(button *btn, unsigned long currentTime)
 	return false;
 }
 
-
 #define CLOCK_PIN_bm PIN0_bm
 #define CLOCK_PORT PORTF
 
@@ -121,12 +120,12 @@ bool buttonPressedAndReleased(button *btn, unsigned long currentTime)
 
 int main(void)
 {
-  init_timer();
-  init_usart();
-  sei();
+	init_timer();
+	init_usart();
+	sei();
 
-  CLOCK_PORT.DIRSET = CLOCK_PIN_bm;
-  CLOCK_PORT.OUTSET = CLOCK_PIN_bm;
+	CLOCK_PORT.DIRSET = CLOCK_PIN_bm;
+	CLOCK_PORT.OUTSET = CLOCK_PIN_bm;
 	STEP_PORT.DIRCLR = STEP_PIN_bm;
 	STEP_PORT.PIN1CTRL |= PORT_PULLUPEN_bm;
 	MODE_PORT.DIRCLR = MODE_PIN_bm;
@@ -135,21 +134,21 @@ int main(void)
 	button step_btn = { "Step", 0, false, STEP_PIN_bm, &STEP_PORT };
 	button mode_btn = { "Mode", 0, false, MODE_PIN_bm, &MODE_PORT };
 
-  printf("Booting Z80 test clock\r\nCompiled: %s %s\r\n", __DATE__, __TIME__);
+	printf("Booting Z80 test clock\r\nCompiled: %s %s\r\n", __DATE__, __TIME__);
 
-  unsigned long lastTime = 0;
+	unsigned long lastTime = 0;
 	bool stepMode = true;
 	bool run = false;
 
-  for (;;) {
-    unsigned long currentTime = millis();
+	for (;;) {
+		unsigned long currentTime = millis();
 
-    if (run && currentTime > lastTime + 250) {
-      CLOCK_PORT.OUTTGL = CLOCK_PIN_bm;
-      lastTime = currentTime;
+		if (run && currentTime > lastTime + 250) {
+			CLOCK_PORT.OUTTGL = CLOCK_PIN_bm;
+			lastTime = currentTime;
 			if (stepMode)
 				run = false;
-    }
+		}
 
 		if (run == false && stepMode == true && buttonPressedAndReleased(&step_btn, currentTime)) {
 			lastTime = currentTime;
@@ -171,7 +170,7 @@ int main(void)
 				(stepMode) ? "Step" : "Run",
 				(run) ? "Running" : "       "
 				);
-  }
+	}
 
-  return 0;
+	return 0;
 }
