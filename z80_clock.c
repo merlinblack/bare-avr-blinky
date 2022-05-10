@@ -95,13 +95,13 @@ bool buttonPressedAndReleased(button *btn, unsigned long currentTime)
 	else {
 		if (!btn->pressed && currentTime > btn->time_pressed + DEBOUNCE_TIME && !value) {
 			btn->pressed = true;
-			printf( "%lu Button %s pressed.\r\n", currentTime, btn->name );
+			//printf( "%lu Button %s pressed.\r\n", currentTime, btn->name );
 		}
 		if (value) {
 			btn->time_pressed = 0;
 			if (btn->pressed) {
 				btn->pressed = false;
-				printf( "%lu Button %s released.\r\n", currentTime, btn->name );
+				//printf( "%lu Button %s released.\r\n", currentTime, btn->name );
 				return true; // Button was pressed, now released.
 			}
 		}
@@ -118,6 +118,8 @@ bool buttonPressedAndReleased(button *btn, unsigned long currentTime)
 #define MODE_PIN_bm PIN2_bm
 #define MODE_PORT PORTF
 
+#define DATA_PORT PORTD
+
 int main(void)
 {
 	init_timer();
@@ -130,6 +132,7 @@ int main(void)
 	STEP_PORT.PIN1CTRL |= PORT_PULLUPEN_bm;
 	MODE_PORT.DIRCLR = MODE_PIN_bm;
 	MODE_PORT.PIN2CTRL |= PORT_PULLUPEN_bm;
+	DATA_PORT.DIRCLR = 0xFF;
 
 	button step_btn = { "Step", 0, false, STEP_PIN_bm, &STEP_PORT };
 	button mode_btn = { "Mode", 0, false, MODE_PIN_bm, &MODE_PORT };
@@ -165,10 +168,15 @@ int main(void)
 				run = true;
 			}
 		}
-		printf("%10lu - %s %s\r", 
+
+		uint8_t reversed = __builtin_avr_insert_bits(0x01234567, DATA_PORT.IN, 0);
+
+		printf("%10lu - %4s %7s %02x %c\r",
 				currentTime, 
 				(stepMode) ? "Step" : "Run",
-				(run) ? "Running" : "       "
+				(run) ? "Running" : "",
+				reversed,
+				reversed > 32 ? reversed : ' '
 				);
 	}
 
